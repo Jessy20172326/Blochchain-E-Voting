@@ -1,3 +1,4 @@
+// index.js
 const express = require('express');
 const path = require('path');
 const jwt = require('jsonwebtoken');
@@ -77,6 +78,10 @@ app.get('/favicon.ico', (req, res) => {
 });
 
 // Start the server
-app.listen(8080, () => {
-  console.log('Server listening on http://localhost:8080');
+app.listen(8080, '0.0.0.0', () => {
+  console.log('Server listening on http://localhost:8080 (accessible via 127.0.0.1 too)');
 });
+
+
+//ganache --host 0.0.0.0 --port 7545   --deterministic   
+// --database.dbPath ./ganache_data   --chain.chainId 1337   --chain.networkId 1337

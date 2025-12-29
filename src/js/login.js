@@ -1,3 +1,4 @@
+// src/js/login.js
 const loginForm = document.getElementById('loginForm');
 
 loginForm.addEventListener('submit', (event) => {

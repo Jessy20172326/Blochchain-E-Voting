@@ -50,12 +50,17 @@ contract Voting {
         return (candidateID,candidates[candidateID].name,candidates[candidateID].party,candidates[candidateID].voteCount);
     }
 
-    function setDates(uint256 _startDate, uint256 _endDate) public{
-        require((votingEnd == 0) && (votingStart == 0) && (_startDate + 1000000 > now) && (_endDate > _startDate));
-        votingEnd = _endDate;
+    // function setDates(uint256 _startDate, uint256 _endDate) public{
+    //     require((votingEnd == 0) && (votingStart == 0) && (_startDate + 1000000 > now) && (_endDate > _startDate));
+    //     votingEnd = _endDate;
+    //     votingStart = _startDate;
+    // }
+    function setDates(uint256 _startDate, uint256 _endDate) public {
+        require(_startDate > now, "Start date must be in the future");
+        require(_endDate > _startDate, "End date must be after start date");
         votingStart = _startDate;
+        votingEnd = _endDate;
     }
-
     function getDates() public view returns (uint256,uint256) {
       return (votingStart,votingEnd);
     }

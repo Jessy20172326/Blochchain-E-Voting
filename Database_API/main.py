@@ -1,4 +1,4 @@
-  # Import required modules
+# Database_API/main.py
 import dotenv
 import os
 import mysql.connector
@@ -37,6 +37,7 @@ try:
         host=os.environ['MYSQL_HOST'],
         database=os.environ['MYSQL_DB'],
     )
+    print("Database connection successful")
     cursor = cnx.cursor()
 except mysql.connector.Error as err:
     if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
@@ -85,6 +86,7 @@ async def get_role(voter_id, password):
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid voter id or password"
             )
+            print(detail)
     except mysql.connector.Error as err:
         print(err)
         raise HTTPException(
