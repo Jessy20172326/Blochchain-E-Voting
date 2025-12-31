@@ -17,7 +17,7 @@ contract Voting {
     uint256 public votingEnd;
     uint256 public votingStart;
 
-
+    // Add a candidate to the election  
     function addCandidate(string memory name, string memory party) public  returns(uint) {
                countCandidates ++;
                candidates[countCandidates] = Candidate(countCandidates, name, party, 0);
@@ -30,7 +30,7 @@ contract Voting {
    
        require(candidateID > 0 && candidateID <= countCandidates);
 
-       //daha önce oy kullanmamıs olmalı
+       // Check that the voter hasn't voted before
        require(!voters[msg.sender]);
               
        voters[msg.sender] = true;
@@ -55,6 +55,8 @@ contract Voting {
     //     votingEnd = _endDate;
     //     votingStart = _startDate;
     // }
+    
+    // Set and get voting start and end dates
     function setDates(uint256 _startDate, uint256 _endDate) public {
         require(_startDate > now, "Start date must be in the future");
         require(_endDate > _startDate, "End date must be after start date");

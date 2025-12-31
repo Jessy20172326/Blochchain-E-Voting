@@ -9,12 +9,32 @@ window.App = {
   web3: null,
   account: null,
 
+  // Start the application
   start: async function () {
     try {
+      // check login status
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        alert('Please log in first to access this page.');
+        window.location.href = '/'; 
+        return;
+      }
+      
+      // check token expiration (can use verify-token method)
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      if (payload.exp && Date.now() >= payload.exp * 1000) {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('userRole');
+        alert('Session expired. Please log in again.');
+        window.location.href = '/';
+        return;
+      }
+    
+
       if (typeof window.ethereum === 'undefined') {
         throw new Error('MetaMask is not installed');
       }
-
+      // Ask user to connect MetaMask
       this.web3 = new Web3(window.ethereum);
       const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
       this.account = accounts[0];
@@ -22,7 +42,7 @@ window.App = {
       VotingContract.setProvider(this.web3.currentProvider);
       VotingContract.defaults({ from: this.account, gas: 6654755 });
 
-      // 显示账户地址（如果存在）
+      // Display account address
       const accountEl = document.getElementById('accountAddress');
       if (accountEl) {
         accountEl.innerText = 'Your Account: ' + this.account;
@@ -37,11 +57,11 @@ window.App = {
     }
   },
 
-  // 单独加载候选人列表
+  // Display the list of candidates
   loadCandidates: async function (instance, container) {
     try {
       const count = await instance.getCountCandidates();
-      container.innerHTML = ''; // 清空旧列表
+      container.innerHTML = ''; 
 
       for (let i = 1; i <= count; i++) {
         try {
@@ -70,7 +90,7 @@ window.App = {
     }
   },
 
-  // 加载并显示投票日期
+  // Display voting start and end dates
   loadVotingDates: async function (instance) {
     const datesEl = document.getElementById('dates');
     if (!datesEl) return;
@@ -87,7 +107,7 @@ window.App = {
 
   loadAndBind: async function (instance) {
     try {
-      // ====== 管理员功能（仅在 admin.html） ======
+      // Admin functions
       const addCandidateBtn = document.getElementById('addCandidate');
       const nameInput = document.getElementById('name');
       const partyInput = document.getElementById('party');
@@ -104,10 +124,10 @@ window.App = {
           try {
             await instance.addCandidate(name, party);
             alert('Candidate added successfully!');
-            // 清空输入框，但不清空页面
+            
             nameInput.value = '';
             partyInput.value = '';
-            // 如果当前页面有候选人列表，刷新它
+            
             if (candidateContainer) {
               await this.loadCandidates(instance, candidateContainer);
             }
@@ -118,7 +138,7 @@ window.App = {
         });
       }
 
-      // ====== 日期设置（仅在 admin.html） ======
+      // set voting dates
       const addDateBtn = document.getElementById('addDate');
       const startDateInput = document.getElementById('startDate');
       const endDateInput = document.getElementById('endDate');
@@ -136,7 +156,7 @@ window.App = {
             const endDate = Math.floor(new Date(endDateVal).getTime() / 1000);
             await instance.setDates(startDate, endDate);
             alert('Voting dates updated!');
-            // 刷新日期显示（如果存在）
+            
             await this.loadVotingDates(instance);
           } catch (err) {
             console.error('Set dates failed:', err);
@@ -145,20 +165,19 @@ window.App = {
         });
       }
 
-      // ====== 通用：加载投票日期（admin 和 voter 都可能有 #dates） ======
+      // load voting dates for admin and voter
       await this.loadVotingDates(instance);
 
-      // ====== 选民功能（仅在 index.html） ======
+      // voter functions
       if (candidateContainer) {
         await this.loadCandidates(instance, candidateContainer);
       }
 
-      // 投票按钮
+      //vote
       const voteButton = document.getElementById('voteButton');
       if (voteButton) {
         const hasVoted = await instance.checkVote();
         voteButton.disabled = hasVoted;
-        // 注意：onclick 已在 HTML 中绑定，此处不重复绑定
       }
 
     } catch (error) {
@@ -187,7 +206,7 @@ window.App = {
       if (msgEl) {
         msgEl.innerHTML = '<p>Voted successfully!</p>';
       }
-      // 不再 reload！状态通过 disabled 反馈
+      
     } catch (error) {
       console.error('Voting failed:', error);
       const msgEl = document.getElementById('msg');
